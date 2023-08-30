@@ -21,7 +21,10 @@ class stack {
 function push(Stack, tok)
 {
 	if (Stack.Sptr >= Stack.Depth - 1) return -1;
-	Stack.Stack[Stack.Sptr] = tok;
+	if (Stack.Stack[Stack.Sptr] == undefined) Stack.Stack[Stack.Sptr] = new token(0, "", 0);
+	Stack.Stack[Stack.Sptr].type = tok.type;
+	Stack.Stack[Stack.Sptr].op = tok.op;
+	Stack.Stack[Stack.Sptr].nmb = tok.nmb;
 	++Stack.Sptr;
 	return 0;
 }
@@ -30,7 +33,9 @@ function pop(Stack, tok)
 {
 	if (Stack.Sptr <= 0) return -1;
 	--Stack.Sptr;
-	tok = Stack.Stack[Stack.Sptr];
+	tok.type = Stack.Stack[Stack.Sptr].type;
+	tok.op = Stack.Stack[Stack.Sptr].op;
+	tok.nmb = Stack.Stack[Stack.Sptr].nmb;
 	return 0;
 }
 
@@ -75,8 +80,8 @@ function Prior(c)
 var tok = new token(0, "", 0);
 var prev_tok = new token(0, "", 0);
 
-var Stack = new stack([tok, tok, tok], 0, Depth);
-var OutStack = new stack([tok, tok, tok], 0, Depth);
+var Stack = new stack([new token(0, "", 0), new token(0, "", 0), new token(0, "", 0)], 0, Depth);
+var OutStack = new stack([new token(0, "", 0), new token(0, "", 0), new token(0, "", 0)], 0, Depth);
 
 var InputStr = "";
 var OutputStr = "";
@@ -145,8 +150,7 @@ function Evaluate()
 				if (tok.op != '(') {
 					let TmpStr = "";
 					TmpStr[0] = tok.op;
-					TmpStr[1] = ' ';
-					TmpStr[2] = 0;
+					TmpStr = tok.op+' ';
 					OutputStr += TmpStr.toString();
 					push(OutStack, tok);
 				}
@@ -163,17 +167,20 @@ function Evaluate()
 				if (((InputStr[cnt] === 'E') || (InputStr[cnt] === 'e')) && (!isE))
 				{
 					isE = true;
+					console.log("isE "+isE);
 					continue;
-				}
+				}else
 				if (((InputStr[cnt] == '+') || (InputStr[cnt] == '-')) && isE && (nsign < 1))
 				{
 					nsign = 1;
+					console.log("nsign "+nsign);
 					continue;
-				}
-				if (((InputStr[count] >= '0') && (InputStr[count] <= '9')) || (InputStr[count] == '.'))
+				}else
+				if (((InputStr[cnt] >= '0') && (InputStr[cnt] <= '9')) || (InputStr[cnt] == '.'))
 					continue;
-				break;
+				else break;
 			}
+			console.log(cnt);
 			count = cnt-1;
 			prev_tok = tok;
 			tok = new token(1, 0, Tmpd);
@@ -181,6 +188,7 @@ function Evaluate()
 			let TmpStr = "";
 			TmpStr = String(Tmpd).toString();
 			OutputStr += TmpStr.toString();
+			OutputStr += " ";
 			push(OutStack, tok);
 		}
 		else if (InputStr[count] === ' ') continue;
@@ -191,13 +199,13 @@ function Evaluate()
 			break;
 		}
 	}
+	console.log("Sptr =" + Stack.Sptr);
 	while (Stack.Sptr != 0) {
 		pop(Stack, tok);
+		console.log("tok = " + tok.op);
 		TmpStr = "";
-		TmpStr[0] = tok.op;
-		TmpStr[1] = ' ';
-		TmpStr[2] = 0;
-		OutputStr += TmpStr.toString();
+		TmpStr = tok.op+' ';
+		OutputStr += TmpStr.toString()+' ';
 		push(OutStack, tok);
 	}
 
