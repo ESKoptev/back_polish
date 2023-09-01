@@ -91,6 +91,7 @@ function Evaluate()
 	var count_out = 0;
 	expr = document.getElementById("Expr").value;
 	InputStr = String(expr);
+	OutputStr = "";
 	for (let count = 0; count < InputStr.length; ++count)
 	{
 		if (IsOp(InputStr[count])) {
@@ -107,30 +108,26 @@ function Evaluate()
 					push(Stack, tok);
 				}
 				else {
-					let TmpStr = "";
-					TmpStr[0] = tok_.op;
-					TmpStr[1] = ' ';
-					TmpStr[2] = 0;
+					let TmpStr = tok_.op + ' ';
 					OutputStr += TmpStr.toString();
 					push(OutStack, tok_);
-					pop(Stack, tok_);
-					while ((Prior(tok_.op) >= Prior(tok.op)) && (Stack.Sptr != 0)) {
-						TmpStr[0] = tok_.op;
-						TmpStr[1] = ' ';
-						TmpStr[2] = 0;
-						OutputStr += TmpStr.toString();
-						push(OutStack, tok_);
+					if(Stack.Sptr != 0)	{
 						pop(Stack, tok_);
+						while ((Prior(tok_.op) >= Prior(tok.op)) && (Stack.Sptr != 0)) {
+							TmpStr = tok_.op + ' ';
+							OutputStr += TmpStr.toString();
+							push(OutStack, tok_);
+							pop(Stack, tok_);
+						}
+						if (Prior(tok_.op) >= Prior(tok.op)) {
+							TmpStr = tok_.op + ' ';
+							OutputStr += TmpStr.toString();
+							push(OutStack, tok_);
+						}
+						else push(Stack, tok_);
+						push(Stack, tok);
 					}
-					if (Prior(tok_.op) >= Prior(tok.op)) {
-						TmpStr[0] = tok_.op;
-						TmpStr[1] = ' ';
-						TmpStr[2] = 0;
-						OutputStr += TmpStr.toString();
-						push(OutStack, tok_);
-					}
-					else push(Stack, tok_);
-					push(Stack, tok);
+					else push(Stack, tok);
 				}
 			}
 
@@ -149,7 +146,6 @@ function Evaluate()
 				pop(Stack, tok);
 				if (tok.op != '(') {
 					let TmpStr = "";
-					TmpStr[0] = tok.op;
 					TmpStr = tok.op+' ';
 					OutputStr += TmpStr.toString();
 					push(OutStack, tok);
