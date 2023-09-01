@@ -99,26 +99,31 @@ int main(int argc, char** argv)
 					TmpStr[2] = 0;
 					strcat_s(OutputStr, TmpStr);
 					push(&OutStack, tok_);
-					pop(&Stack, &tok_);
-					while ((Prior(tok_.op)>=Prior(tok.op))&&(Stack.Sptr!=0))
+					if(Stack.Sptr != 0)
 					{
-						TmpStr[0] = tok_.op;
-						TmpStr[1] = ' ';
-						TmpStr[2] = 0;
-						strcat_s(OutputStr, TmpStr);
-						push(&OutStack, tok_);
 						pop(&Stack, &tok_);
+						while ((Prior(tok_.op) >= Prior(tok.op)) && (Stack.Sptr != 0))
+						{
+							TmpStr[0] = tok_.op;
+							TmpStr[1] = ' ';
+							TmpStr[2] = 0;
+							strcat_s(OutputStr, TmpStr);
+							push(&OutStack, tok_);
+							pop(&Stack, &tok_);
+						}
+						if (Prior(tok_.op) >= Prior(tok.op))
+						{
+							TmpStr[0] = tok_.op;
+							TmpStr[1] = ' ';
+							TmpStr[2] = 0;
+							strcat_s(OutputStr, TmpStr);
+							push(&OutStack, tok_);
+						}
+						else push(&Stack, tok_);
+						//push(&Stack, tok_);
+						push(&Stack, tok);
 					}
-					if (Prior(tok_.op) >= Prior(tok.op))
-					{
-						TmpStr[0] = tok_.op;
-						TmpStr[1] = ' ';
-						TmpStr[2] = 0;
-						strcat_s(OutputStr, TmpStr);
-						push(&OutStack, tok_);
-					}
-					else push(&Stack, tok_);
-					push(&Stack, tok);
+					else push(&Stack, tok);
 				}
 			}
 
@@ -180,6 +185,7 @@ int main(int argc, char** argv)
 	}
 	printf("Результат: %s\n", OutputStr);
 	PrintStack(OutStack);
+	//Вычисление выражения по польской нотации
 	for (int count = 0; count < OutStack.Sptr; ++count)
 	{
 		if (OutStack.Stack[count].type == 1) push(&Stack, OutStack.Stack[count]);
