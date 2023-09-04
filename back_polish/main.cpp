@@ -45,7 +45,7 @@ int PrintStack(stack Stack)
 }
 bool IsOp(char c)
 {
-	return c == '+' || c == '-' || c == '*' || c == '/' || c == '+' || c == '^';
+	return c == '+' || c == '-' || c == '*' || c == '/' || c == '+' || c == '^' || c == '~';
 }
 int Prior(char c)
 {
@@ -57,7 +57,8 @@ int Prior(char c)
 	case '-': return 2;
 	case '*': return 3;
 	case '/': return 3;
-	case '^': return 4;
+	case '~': return 4; // унарный минус
+	case '^': return 5;
 	default: return -255;
 	}
 }
@@ -73,7 +74,7 @@ int main(int argc, char** argv)
 	Stack.Sptr = 0;
 	OutStack.Sptr = 0;
 	int count_out = 0;
-	strcpy_s(InputStr, "3.14 + 0.4 * .2 / (1 - 5)^2"); //3.14 + 0.4 * .2 / (1 - 5)^2
+	strcpy_s(InputStr, "2^-2"); //3.14 + 0.4 * .2 / (1 - 5)^2
 	for (unsigned int count = 0; count < strlen(InputStr); ++count)
 	{
 		if (IsOp(InputStr[count]))
@@ -81,12 +82,18 @@ int main(int argc, char** argv)
 			printf("%c\n", InputStr[count]);
 			prev_tok = tok;
 			tok = {0, InputStr[count], 0.0};
+			//Обработка унарного минуса
+			if ((tok.op == '-') && (prev_tok.type == 0 || count == 0)) //Условие для унарного минуса
+			{
+				tok.op = '~';
+			}
+
 			if (Stack.Sptr == 0) push(&Stack, tok);
 			else
 			{
 				token tok_ = { 0 };
 				pop(&Stack, &tok_);
-				if (Prior(tok_.op) < Prior(tok.op))
+				if ((Prior(tok_.op) < Prior(tok.op))||(tok_.op == '^'&&tok.op == '~'))
 				{
 					push(&Stack, tok_);
 					push(&Stack, tok);
@@ -193,9 +200,12 @@ int main(int argc, char** argv)
 		{
 			token Nmb1, Nmb2;
 			pop(&Stack, &Nmb2);
-			pop(&Stack, &Nmb1);
+			if (OutStack.Stack[count].op != '~') pop(&Stack, &Nmb1); //Если операция не унарная, то извлекаем второй операнд
 			switch (OutStack.Stack[count].op)
 			{
+				case '~': Nmb1.type = 1;
+						  Nmb1.nmb = -Nmb2.nmb;
+				break;
 				case '+': Nmb1.nmb += Nmb2.nmb;
 				break;
 				case '-': Nmb1.nmb -= Nmb2.nmb;
